@@ -1,0 +1,14 @@
+node_modules
+yarn-error.log
+.DS_Store
+.idea
+.vscode
+.env
+.env.local
+/sanbox/
+/data/
+sand/
+package-lock.json
+coverage
+apidoc
+.nyc_output

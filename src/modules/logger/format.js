@@ -7,6 +7,7 @@ const LEVEL = Symbol.for('level');
 const MESSAGE = Symbol.for('message');
 
 const Format = {
+
   formatMeta: (info) => {
     const filteredInfo = Object.assign({}, info);
 
@@ -24,12 +25,12 @@ const Format = {
       machine: info.machine,
     };
 
-    if (nbinfo) {
+    if(nbinfo) {
       newInfo.meta = filteredInfo;
     }
 
-    if (info.error) {
-      newInfo.error = Format.formatRecursiveError(info);
+    if(info.error) {
+      newInfo.error = info.error;
     }
 
     return newInfo;
@@ -43,27 +44,28 @@ const Format = {
     };
 
     info.environment = config.ENVIRONMENT;
-    info.tags = ['backend'];
+    info.tags = [config.LOG.LOGZIO_SERVER_NAME];
 
     return info;
   }),
 
-  formatRecursiveError(info) {
-    if (info.error instanceof Error) {
+  formatRecursiveError(info){
+
+    if(info.error instanceof Error) {
       info.errorCode = info.error.code;
       info.errorStack = info.error.stack;
       info.errorMessage = info.error.message;
 
-      if (info.error.error instanceof Error) {
-        info.errorDeep = {
-          error: info.error.error,
-        };
+      if(info.error.error instanceof Error){
 
-        info.errorDeep = Format.formatRecursiveError(info.errorDeep);
+        info.error.error = Format.formatRecursiveError(info.error.error);
+
       }
+
     }
 
     return info;
+
   },
 
   formatError: winston.format((info) => {
@@ -82,14 +84,15 @@ const Format = {
     delete filteredInfo[MESSAGE];
 
     let detailString = '';
-    if (opts.showDetails && Object.keys(filteredInfo).length > 0) {
+    if(opts.showDetails && Object.keys(filteredInfo).length > 0) {
       const detail = Utils.JSONStringifyCircular(filteredInfo).replace(/\\n/g, '\n');
-      detailString = `\nDetail : ${detail}`;
+      detailString = `\nDetail : ${detail}`
     }
 
     info[MESSAGE] = `${info.timestamp} [${info.level}] ${info.message}${detailString}`;
     return info;
   }),
+
 };
 
 module.exports = Format;

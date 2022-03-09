@@ -1,0 +1,22 @@
+{
+  "extends" : [
+    "eslint:recommended",
+    "plugin:node/recommended",
+    "plugin:promise/recommended"
+  ],
+  "plugins": [
+    "node",
+    "promise"
+  ],
+  "env": {
+    "node" : true
+  },
+  "globals" : {
+  },
+  "rules": {
+    "require-atomic-updates": "off",
+    "no-console": 2,
+    "quotes": [2, "single", { "avoidEscape": true }]
+  }
+}
+

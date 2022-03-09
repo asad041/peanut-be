@@ -1,9 +1,7 @@
-const merge = require('lodash/merge');
-
 const throwError = (message, detail) => {
   const err = new Error(message);
 
-  merge(err, detail);
+  Object.assign(err, detail);
 
   throw err;
 };
@@ -15,7 +13,7 @@ const throwExposable = (code, status, description, exposeMeta) => {
       code,
       status,
       description,
-      exposeMeta,
+      exposeMeta
     });
   }
   const err = new Error(code);
@@ -23,12 +21,21 @@ const throwExposable = (code, status, description, exposeMeta) => {
 
   err.status = status || error.status;
   err.description = description || error.description;
+
   if (exposeMeta) {
     err.exposeMeta = exposeMeta;
   }
 
   throw err;
 };
+
+function castExposable(error) {
+
+  if (error.exposeCustom_) throw error;
+
+  throwExposable(error.message, error.status, error.description);
+
+}
 
 function getError(errorCode) {
   const code = ERRORS[errorCode];
@@ -50,69 +57,160 @@ function assertExposable(condition, ...args) {
   }
 }
 
-const ERRORS = [
-  // API
-  {
-    code: 'unknown_error',
-    status: 500,
-    description: 'Unknown Error',
+function bodyParserError(error) {
+  if(error.type === 'entity.too.large') {
+    throwExposable('entity_too_large');
+  } else {
+    throwExposable('bad_params', null, error.message);
+  }
+}
+
+const ERRORS = {
+  too_busy: {
+    status: 503,
+    description: 'Server too busy',
   },
-  {
-    code: 'unknown_error_code',
+  unknown_error: {
     status: 500,
-    description: 'Unknown error code',
+    description: 'Unknown error',
   },
-  {
-    code: 'bad_params',
+  not_implemented: {
+    status: 501,
+    description: 'Not implemented',
+  },
+  entity_too_large: {
+    status: 413,
+    description: 'The files you are trying to upload are too big',
+  },
+  method_not_allowed: {
+    status: 405,
+    description: 'The action you want to do is not allowed',
+  },
+  notification_not_found: {
+    status: 404,
+    description: 'Notification not found.',
+  },
+  wallet_not_found: {
+    status: 404,
+    description: 'Wallet not found.',
+  },
+  image_not_found: {
+    status: 404,
+    description: 'Image not found.',
+  },
+  not_found: {
+    status: 404,
+    description: 'Not found',
+  },
+  not_found_content: {
+    status: 404,
+    description: 'Not found',
+  },
+  user_not_found: {
+    status: 404,
+    description: 'User not found.',
+  },
+  demo_account: {
+    status: 404,
+    description: 'resource is not available with the demo account',
+  },
+  transaction_not_found: {
+    status: 404,
+    description: 'Transaction not found.',
+  },
+  token_not_found: {
+    status: 404,
+    description: 'Token not found.',
+  },
+  invalid_origin: {
+    status: 403,
+    description: 'Origin not allowed',
+  },
+  access_denied: {
+    status: 401,
+    description: 'Access to a forbidden resource',
+  },
+  token_expired: {
+    status: 401,
+    description: 'This token is expired',
+  },
+  bad_credentials: {
+    status: 401,
+    description: 'Bad credentials',
+  },
+  two_factor_token_required: {
+    status: 401,
+    description: 'This account has enabled two-factor authentication and the token is required',
+  },
+  two_factor_token_invalid: {
+    status: 401,
+    description: 'The two-factor token you provided is invalid',
+  },
+  image_invalid_path: {
+    status: 401,
+    description: 'Path image is invalid',
+  },
+  image_upload_fails: {
+    status: 401,
+    description: 'Upload Image fails',
+  },
+  image_destroy_fails: {
+    status: 401,
+    description: 'Destroy image fails',
+  },
+  bad_params: {
     status: 400,
     description: 'Bad parameters',
   },
-  {
-    code: 'access_denied',
-    status: 401,
-    description: 'You are trying to access to a forbidden resource',
+  upload_image_fail: {
+    status: 400,
+    description: 'Upload image fail',
   },
-  {
-    code: 'forbidden',
-    status: 403,
-    description: 'forbidden',
+  bad_request: {
+    status: 400,
+    description: 'Bad request',
   },
-  {
-    code: 'not_found',
-    status: 404,
-    description: 'Not Found',
+  password_should_be_different: {
+    status: 400,
+    description: 'Old and new password should be different',
   },
-  {
-    code: 'unknown_coin_code',
-    status: 404,
-    description: 'Coin Code not found',
+  already_exists: {
+    status: 400,
+    description: 'Entity already exists',
   },
-  {
-    code: 'entity_too_large',
-    status: 413,
-    description: 'The files you are trying to upload are too big.',
+  disabled_account: {
+    status: 400,
+    description: 'Account is disabled',
   },
-
-  // Internal
-  {
-    code: 'too_busy',
-    status: 503,
-    description: 'Server too busy.',
+  user_not_exists: {
+    status: 400,
+    description: 'User not found.',
   },
-].reduce((acc, error) => {
-  acc[error.code] = {
-    status: error.status,
-    description: error.description,
-  };
-
-  return acc;
-}, {});
+  invalid_token: {
+    status: 400,
+    description: 'The token you are trying to use is not valid',
+  },
+  signup_disabled: {
+    status: 400,
+    description: 'Signup is currently disabled',
+  },
+  enable_2fa: {
+    status: 400,
+    description: 'You need enable 2fa for access to this resource',
+  },
+  signature_mismatched: {
+    status: 400,
+    description: 'cannot verify signature'
+  }
+};
 
 module.exports = {
   throwError,
   throwExposable,
+  bodyParserError,
   assert,
   assertExposable,
+  castExposable,
   ERRORS,
 };
 

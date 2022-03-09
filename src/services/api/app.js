@@ -1,38 +1,49 @@
 const Koa = require('koa');
-const MainMiddleware = require('./middlewares');
-const logger = require('../../modules/logger');
-const CONFIG = require('../../../config');
-const llo = logger.logMeta.bind(null, { service: 'api' });
 
-const API = () =>
-  new Promise((resolve, reject) => {
-    const app = new Koa();
+const MainAuthMiddleware = require('../../modules/middlewares/index');
+const logger = require('../../modules/logger/index');
+const config = require('../../../config');
+const mainRouters = require('./routers');
 
-    app.proxy = CONFIG.REMOTE_EXECUTION;
+const serviceName = 'api';
+const llo = logger.logMeta.bind(null, { service: serviceName });
 
-    app.on('error', (error) => {
-      logger.error('Unexpected API error', { error });
-    });
+const API = () => new Promise((resolve, reject) => {
 
-    require('koa-ctx-cache-control')(app);
+  const app = new Koa();
 
-    app.use((ctx, next) => {
-      ctx.cacheControl(false);
-      return next();
-    });
+  app.proxy = config.REMOTE_EXECUTION;
 
-    app.use(MainMiddleware());
+  app.on('error', error => {
 
-    const server = app.listen(CONFIG.SERVICES.API.PORT, (err) => {
-      if (err) {
-        return reject(err);
-      }
+    logger.error('Unexpected API error', { error });
 
-      logger.info('Listening', llo({ port: CONFIG.SERVICES.API.PORT }));
-      resolve(app);
-    });
-
-    server.setTimeout(CONFIG.SERVICES.API.TIMEOUT * 1000);
   });
+
+  require('koa-ctx-cache-control')(app);
+
+  app.use((ctx, next) => {
+
+    ctx.cacheControl(false);
+    return next();
+
+  });
+
+  app.use(MainAuthMiddleware(serviceName, mainRouters.router()));
+
+  const server = app.listen(config.SERVICES.API.PORT, (err) => {
+
+    if(err) {
+      return reject(err);
+    }
+
+    logger.info('Listening', llo({ port: config.SERVICES.API.PORT }));
+    resolve(app);
+
+  });
+
+  server.setTimeout(config.SERVICES.API.TIMEOUT * 1000);
+
+});
 
 module.exports = API;

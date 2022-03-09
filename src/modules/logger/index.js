@@ -1,21 +1,26 @@
 const winston = require('winston');
+
 const CONFIG = require('../../../config');
 const ExternalLogger = require('./external');
 const Formats = require('./format');
 const Utils = require('../../helpers/utils');
 
-const format = winston.format.combine(...[Formats.formatError(), winston.format.timestamp(), Formats.formatMachine()]);
+const format = winston.format.combine(...[
+  Formats.formatError(),
+  winston.format.timestamp(),
+  Formats.formatMachine(),
+]);
 
 const externalLogger = new ExternalLogger({
   name: 'external-logger',
   level: 'verbose',
 });
 
-const consoleFormat = winston.format.combine(
-  ...[CONFIG.REMOTE_EXECUTION ? null : winston.format.colorize(), Formats.consoleFormat({ showDetails: true })].filter(
-    (f) => f !== null
-  )
-);
+/* istanbul ignore next */
+const consoleFormat = winston.format.combine(...[
+  CONFIG.REMOTE_EXECUTION ? null : winston.format.colorize(),
+  Formats.consoleFormat({ showDetails: true }),
+].filter(f => f !== null));
 
 const consoleLogLevel = CONFIG.REMOTE_EXECUTION ? 'warn' : CONFIG.LOG.LEVEL;
 const consoleLogger = new winston.transports.Console({
@@ -24,7 +29,10 @@ const consoleLogger = new winston.transports.Console({
   level: consoleLogLevel,
 });
 
-const transports = [externalLogger, consoleLogger];
+const transports = [
+  externalLogger,
+  consoleLogger,
+];
 
 // if(!CONFIG.REMOTE_EXECUTION) {
 //   transports.push(
@@ -40,11 +48,17 @@ const logger = winston.createLogger({
 });
 
 logger.purge = () => {
+
   externalLogger.purge();
+
 };
 
-logger.logMeta = (...metas) => Object.assign({}, ...metas);
+logger.logMeta = (...metas) =>
+  Object.assign(
+    {},
+    ...metas,
+  );
 
-Utils.defaultError = (error) => logger.error(error.message, { error });
+Utils.defaultError = error => logger.error(error.message, { error });
 
 module.exports = logger;

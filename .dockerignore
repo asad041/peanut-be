@@ -1,0 +1,9 @@
+node_modules/
+.idea/
+**/node_modules/
+**/data/
+.env
+data/
+coverage/
+.git/
+.semaphore-cache/

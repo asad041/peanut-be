@@ -1,12 +1,12 @@
 const toobusy = require('toobusy-js');
 const logger = require('../modules/logger');
 
-toobusy.maxLag(400);
+toobusy.maxLag(600);
 
-toobusy.interval(1000);
+toobusy.interval(2000);
 
-toobusy.onLag(function (currentLag) {
-  logger.warn('too_busy', { currentLag });
+toobusy.onLag((currentLag) => {
+  logger.warn('too_busy', {currentLag}); // codecov:ignore:this -- ignores this line
 });
 
 module.exports = {

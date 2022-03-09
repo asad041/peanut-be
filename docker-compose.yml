@@ -1,0 +1,77 @@
+version: '3.7'
+
+services:
+
+### Services
+
+  service-main:
+    build:
+      context: ./
+    ports:
+      - ${SERVICE_API_PORT:-3000}:${SERVICE_API_PORT:-3000}
+    environment:
+      PORT: ${SERVICE_API_PORT:-3000}
+    depends_on:
+      - mongoose
+    env_file:
+      - ./docker.env
+    command: bash -c 'npm run wait:db & wait && npm run service:main'
+
+  service-api:
+    build:
+      context: ./
+    ports:
+      - ${SERVICE_API_PORT:-3000}:${SERVICE_API_PORT:-3000}
+    environment:
+      PORT: ${SERVICE_API_PORT:-3000}
+    depends_on:
+      - mongoose
+    env_file:
+      - ./docker.env
+    command: bash -c 'npm run wait:db & wait && npm run service:api'
+
+  service-api-admin:
+    build:
+      context: ./
+    ports:
+      - ${SERVICE_API_PORT:-3000}:${SERVICE_API_ADMIN_PORT:-5000}
+    environment:
+      PORT: ${SERVICE_API_ADMIN_PORT:-5000}
+    depends_on:
+      - mongoose
+    env_file:
+      - ./docker.env
+    command: bash -c 'npm run wait:db & wait && npm run service:api-admin'
+
+  ### Dependencies
+
+  mongoose:
+    image: mongo
+    ports:
+      - 27017:27017
+
+  mongoose_backup_1:
+    build:
+      context: ./config/mongodb
+    ports:
+      - 27017:27017
+
+### Tests
+
+  unit:
+    build:
+      context: ./
+    command: [ "npm run", "test:unit" ]
+
+
+### Missing only in test
+
+  dotonly:
+    build:
+      context: ./
+    command: [ "npm run", "test:dotonly" ]
+
+  linter:
+    build:
+      context: ./
+    command: [ "npm run", "lint" ]

@@ -1,9 +1,10 @@
-const Joi = require('joi');
+const Joi = require('@hapi/joi');
 const Router = require('@koa/router');
 const CoinController = require('../controllers/coin');
-const { validateParams } = require('../../../helpers/validation');
+const {validateParams} = require('../../../helpers/validation');
 
 const CoinRouter = {
+
   schemaGetByCoinCode: Joi.object({
     coinCode: Joi.string().min(3).uppercase().max(5),
   }),

@@ -1,0 +1,70 @@
+version: '3.7'
+
+services:
+
+### Services
+
+  service-api:
+    build:
+      context: ./
+#    ports:
+#      - ${SERVICE_API_PORT:-3000}:${SERVICE_API_PORT:-3000}
+    environment:
+      PORT: ${SERVICE_API_PORT:-3000}
+    depends_on:
+      - redis
+      - mongoose
+    env_file:
+      - ./docker.env
+      - ./test/test.env
+    command: bash -c 'npm run wait:db & npm run wait:redis & wait && npm run service:api'
+
+  service-api-admin:
+    build:
+      context: ./
+#    ports:
+#      - ${SERVICE_API_PORT:-3000}:${SERVICE_API_ADMIN_PORT:-5000}
+    environment:
+      PORT: ${SERVICE_API_ADMIN_PORT:-5000}
+    depends_on:
+      - redis
+      - mongoose
+    env_file:
+      - ./docker.env
+      - ./test/test.env
+    command: bash -c 'npm run wait:db & npm run wait:redis & wait && npm run service:api-admin'
+
+  ### Dependencies
+
+  redis:
+    image: redis:5.0.8-alpine
+    command: ["redis-server", "--bind", "redis", "--port", "6379"]
+
+  mongoose:
+    build:
+      context: ./config/mongodb
+    ports:
+      - 27017:27017
+
+### Tests
+
+  unit:
+    build:
+      context: ./
+    command: bash -c 'npm run test:unit'
+
+  ### Missing only in test
+  dotonly:
+    build:
+      context: ./
+      args:
+        NPM_TOKEN: ${NPM_TOKEN}
+    command: bash -c 'npm run test:dotonly'
+
+  linter:
+    build:
+      context: ./
+      args:
+        NPM_TOKEN: ${NPM_TOKEN}
+    command: bash -c 'npm run lint'
+

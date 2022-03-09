@@ -2,15 +2,16 @@ const Router = require('@koa/router');
 const StatusController = require('../controllers/status');
 
 const StatusRouter = {
+
   async status(ctx) {
-    const email = ctx.state && ctx.state.user ? ctx.state.user.email : null;
 
     ctx.cacheControl(60 * 1000); // 1 minute
 
-    ctx.body = await StatusController.get(email);
+    ctx.body = await StatusController.get();
   },
 
-  router() {
+  router(){
+
     const router = Router();
 
     /**
@@ -25,7 +26,9 @@ const StatusRouter = {
     router.get('/', StatusRouter.status);
 
     return router;
-  },
+
+  }
+
 };
 
 module.exports = StatusRouter;

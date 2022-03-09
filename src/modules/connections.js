@@ -1,42 +1,61 @@
 const DB = require('./db');
-const logger = require('./logger');
+const logger = require('../modules/logger');
 const Utils = require('../helpers/utils');
-const errors = require('../helpers/errors');
 
 const llo = logger.logMeta.bind(null, { service: 'connection' });
 
 const Connections = {
   openedConnections: [],
 
-  async open(needConnections) {
-    try {
-      if (needConnections.find((needConnection) => !['postgre'].includes(needConnection))) {
-        errors.throwError('Unknown service to connect to', { needConnections });
+  open(needConnections) {
+
+    return Utils.asyncForEach(needConnections, async connection => {
+
+      try {
+
+        if(!connection || Connections.openedConnections.find(c => c === connection)) return Promise.resolve();
+
+        Connections.openedConnections.push(connection);
+
+        switch(connection) {
+          case 'mongoose': {
+            const db = await DB.connect();
+            return db;
+          }
+          default: {
+            Connections.openedConnections.pop();
+            return Promise.reject(new Error('Unknown service to connect to') );
+          }
+        }
+
+      } catch(err){
+
+        err.connection = connection;
+        throw err;
       }
-      const needConnectionsNotOpened = needConnections.filter(
-        (needConnection) =>
-          !Connections.openedConnections.find((connectionOpened) => needConnection === connectionOpened)
-      );
-      if (needConnectionsNotOpened.find((connection) => connection === 'postgre')) {
-        await DB.connect();
-        Connections.openedConnections.push('postgre');
-      }
-      logger.verbose('Connections open', llo({}));
-      return true;
-    } catch (error) {
-      logger.warn('Unable to open connections', { error });
-      throw error;
-    }
+
+    })
+      .then(() => {
+        logger.verbose('Connections open', llo({}));
+        return true;
+      })
+      .catch(error => {
+        Connections.openedConnections.pop();
+        logger.warn('Unable to open connections', { error });
+        throw error;
+      });
+
   },
 
   close() {
-    return Utils.asyncForEach(Connections.openedConnections, async (connection) => {
-      switch (connection) {
-        case 'postgre': {
+
+    return Utils.asyncForEach(Connections.openedConnections, async connection => {
+      switch(connection) {
+        case 'mongoose': {
           return DB.disconnect();
         }
         default: {
-          return Promise.reject(new Error('Unknown service to disconnect from'));
+          return Promise.reject(new Error('Unknown service to disconnect from') );
         }
       }
     })
@@ -46,11 +65,13 @@ const Connections = {
         logger.purge();
         return Utils.wait(500);
       })
-      .catch((error) => {
+      .catch(error => {
         logger.error('Unable to close connections', llo({ error }));
         throw error;
       });
+
   },
+
 };
 
 module.exports = Connections;
