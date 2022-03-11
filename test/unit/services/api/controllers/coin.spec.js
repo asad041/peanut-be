@@ -2,6 +2,7 @@ const path = require('path');
 const sinon = require('sinon');
 const moment = require('moment');
 const CoinCtrl = require(path.join(srcDir, '/services/api/controllers/coin'));
+const GeckoHelper = require(path.join(srcDir, '/helpers/gecko'));
 // const config = require(path.join(srcDir, '../config'));
 const CoinModel = mongoose.model('coin');
 
@@ -14,6 +15,8 @@ describe('Controller:coin', () => {
     this.rawCoin = await CoinModel.create({
       code: 'BTC',
       name: 'bitcoin',
+      price: 0,
+      fetchedTime: moment(),
     });
 
   });
@@ -35,9 +38,7 @@ describe('Controller:coin', () => {
         filterKeys: () => dummyCoin,
       };
 
-      const stubFindByCoinCode = sandbox
-        .stub(CoinModel, 'findByCoinCode')
-        .resolves(null);
+      const stubFindByCoinCode = sandbox.stub(CoinModel, 'findByCoinCode').resolves(null);
       const stubCreate = sandbox.stub(CoinModel, 'create').resolves(rawCoin);
 
       const coin = await CoinCtrl.createCoin(rawCoin.code, rawCoin.name);
@@ -72,7 +73,12 @@ describe('Controller:coin', () => {
 
   describe('get coin', () => {
     it('Should get coin by code ', async () => {
+      sandbox.stub(CoinModel, 'findByCoinCode').resolves(this.rawCoin);
+      const stubGeckoAPI = sandbox.stub(GeckoHelper, 'getCoinByName').resolves(null);
+
       const coin = await CoinCtrl.getCoinByCode(this.rawCoin.code);
+
+      expect(stubGeckoAPI.calledOnce).to.be.true;
 
       expect(coin.name).to.eq(this.rawCoin.name);
       expect(coin.code).to.eq(this.rawCoin.code);
