@@ -2,6 +2,8 @@
 
 This is the architecture of PeanutHub NodeJS Test.
 
+[![CircleCI](https://circleci.com/gh/asad041/peanut-be/tree/main.svg?style=shield)](https://circleci.com/gh/asad041/peanut-be/tree/main)
+
 ## Prerequisites
 
 - Docker ([https://docs.docker.com/install](https://docs.docker.com/install))
