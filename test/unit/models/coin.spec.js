@@ -53,10 +53,13 @@ describe('Model:coin', () => {
   it('Should filterKeys', async () => {
 
     const coin = this.coin.filterKeys();
-    expect(Object.keys(coin).length).to.eq(3);
+    expect(Object.keys(coin).length).to.eq(6);
     expect(coin._id).to.exist;
     expect(coin.code).to.exist;
     expect(coin.name).to.exist;
+    expect(coin.price).to.exist;
+    expect(coin.isActive).to.exist;
+    expect(coin.fetchedTime).to.exist;
 
   });
 
