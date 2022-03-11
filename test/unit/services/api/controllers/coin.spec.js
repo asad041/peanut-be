@@ -72,7 +72,27 @@ describe('Controller:coin', () => {
   });
 
   describe('get coin', () => {
-    it('Should get coin by code ', async () => {
+    it('Should get coin by code', async () => {
+      const rawCoin = {
+        code: 'BTC',
+        name: 'bitcoin',
+        fetchedTime: moment(),
+        price: 10,
+        isActive: true,
+        filterKeys: () => (rawCoin),
+      };
+      sandbox.stub(CoinModel, 'findByCoinCode').resolves(rawCoin);
+
+      const coin = await CoinCtrl.getCoinByCode(rawCoin.code);
+
+      expect(coin.code).to.eq(rawCoin.code);
+      expect(coin.name).to.eq(rawCoin.name);
+      expect(coin.price).to.eq(rawCoin.price);
+      expect(moment(coin.fetchedTime).isValid()).to.be.true;
+      expect(coin.isActive).to.be.true;
+    });
+    
+    it('Should get coin by code by using gecko', async () => {
       sandbox.stub(CoinModel, 'findByCoinCode').resolves(this.rawCoin);
       const stubGeckoAPI = sandbox.stub(GeckoHelper, 'getCoinByName').resolves(null);
 
