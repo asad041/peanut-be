@@ -13,7 +13,7 @@ const throwExposable = (code, status, description, exposeMeta) => {
       code,
       status,
       description,
-      exposeMeta
+      exposeMeta,
     });
   }
   const err = new Error(code);
@@ -30,11 +30,9 @@ const throwExposable = (code, status, description, exposeMeta) => {
 };
 
 function castExposable(error) {
-
   if (error.exposeCustom_) throw error;
 
   throwExposable(error.message, error.status, error.description);
-
 }
 
 function getError(errorCode) {
@@ -58,7 +56,7 @@ function assertExposable(condition, ...args) {
 }
 
 function bodyParserError(error) {
-  if(error.type === 'entity.too.large') {
+  if (error.type === 'entity.too.large') {
     throwExposable('entity_too_large');
   } else {
     throwExposable('bad_params', null, error.message);
@@ -122,6 +120,10 @@ const ERRORS = {
     status: 404,
     description: 'Token not found.',
   },
+  unknown_coin_code: {
+    status: 404,
+    description: 'Could not find coin with the given coin code',
+  },
   invalid_origin: {
     status: 403,
     description: 'Origin not allowed',
@@ -140,7 +142,8 @@ const ERRORS = {
   },
   two_factor_token_required: {
     status: 401,
-    description: 'This account has enabled two-factor authentication and the token is required',
+    description:
+      'This account has enabled two-factor authentication and the token is required',
   },
   two_factor_token_invalid: {
     status: 401,
@@ -200,8 +203,12 @@ const ERRORS = {
   },
   signature_mismatched: {
     status: 400,
-    description: 'cannot verify signature'
-  }
+    description: 'cannot verify signature',
+  },
+  already_coin_exists: {
+    status: 400,
+    description: 'Coin entity already exists',
+  },
 };
 
 module.exports = {
