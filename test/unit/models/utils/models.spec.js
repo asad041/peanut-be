@@ -19,6 +19,24 @@ describe('Model:utils', () => {
 
   });
 
+  it('Should do getter', async () => {
+    const rawDate = moment().toDate();
+    const returnDate = await ModelsUtils.getter(rawDate);
+
+    expect(moment(returnDate).isValid()).to.be.true;
+  });
+
+  it('Should do setter', async () => {
+    const rawDate = moment().toDate();
+    const returnDate = await ModelsUtils.setter(rawDate);
+
+    expect(moment(returnDate).isValid()).to.be.true;
+
+    const returnDate2 = await ModelsUtils.setter();
+
+    expect(returnDate2).to.eq(null);
+  });
+
   it('Should filterByDate', async () => {
 
     const fromDate = moment().toDate();
