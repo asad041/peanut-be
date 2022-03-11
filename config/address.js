@@ -13,4 +13,6 @@ if (process.env.ENVIRONMENT === 'development') {
 
 }
 
+address.GECKO_API_URL = 'https://api.coingecko.com/api/v3';
+
 module.exports = address;
