@@ -22,8 +22,9 @@
     "test:unit:coverage": "nyc --temp-dir=coverage/.nyc_outputUnit --report-dir=coverage/unit npm run test:unit",
     "test:coverage:check": "nyc check-coverage --temp-dir=coverage/unit --statements 95 --branches 82 --functions 91 --lines 95",
     "test:circleci": "circleci config validate",
+    "service:migrations": "migrate-mongo up",
     "service:main": "node runners/main",
-    "service:api": "node runners/api",
+    "service:api": "nodemon runners/api",
     "docker:test:unit": "docker-compose -f docker-compose.test.yml up --exit-code-from unit --build unit",
     "docker:test:dotonly": "docker-compose -f docker-compose.test.yml down && docker-compose -f docker-compose.test.yml up --exit-code-from dotonly --build dotonly && docker-compose -f docker-compose.test.yml down",
     "test:manual": "mocha ./test/test.config.js ./test/manual --recursive --timeout 90000",
@@ -119,5 +120,9 @@
     "uuid": "^8.3.2",
     "winston": "^3.3.3",
     "winston-transport": "^4.4.0"
+  },
+  "devDependencies": {
+    "migrate-mongo": "^8.2.3",
+    "nodemon": "^2.0.15"
   }
 }
